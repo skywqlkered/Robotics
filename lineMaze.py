@@ -1,5 +1,7 @@
 from robots import *
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
+from linefollower.PID_controller import PID
+
 
 client = RemoteAPIClient()
 sim = client.require("sim")
@@ -33,23 +35,39 @@ def is_blue_detected(color_sensor):
 
     return blue_intensity > blue_ratio_threshold
 
+def change_motor_PID():
+    color_sensor._update_image() # Updates the internal image
+    reflection = color_sensor.reflection() # Gets the reflection from the image
+    print(f"reflection: {reflection}")
+    motorspeed: float = pid.compute(reflection, dt=1.0)
+    basespeed: float = 5
 
+    print(f"speed: {motorspeed}")
+    left_motor.run(speed=basespeed+motorspeed)
+    right_motor.run(speed=basespeed-motorspeed)
+    print("------------------------------------")
 def follow_line():
     """
     A very simple line follower that should be improved.
     """
-    color_sensor._update_image() # Updates the internal image
-    reflection = color_sensor.reflection() # Gets the reflection from the image
-    print(reflection)
+    change_motor_PID()
 
-    left_motor.run(speed=5) # Runs the left motor at speed=5
-    right_motor.run(speed=5) # Runs the right motor at speed=5
 
-def on_line() -> None:
-    pass
 
 # Starts coppeliasim simulation if not done already
+setpoint: float = 60.0
+"""backup
+kp: float = 0.05
+ki: float = 0.001
+kd: float = 0.0005
+"""
+kp: float = 0.14 
+ki: float = 0.0
+kd: float = 0.00
+
+pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=setpoint)
 sim.startSimulation()
+
 
 # MAIN CONTROL LOOP
 while True:
