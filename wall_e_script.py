@@ -28,7 +28,11 @@ time.sleep(0.5)
 
 # MAIN CONTROL LOOP
 while True:
-	print(robot.get_battery())
-	left_motor.run(3)
-	right_motor.run(-3)
-	robot.compress()
+	# print(robot.get_battery())
+	left_motor.run(5)
+	right_motor.run(4)
+	# robot.compress()
+	# print(small_image_sensor.rgb())
+	# print(top_image_sensor.rgb())
+	print(robot.get_sonar_sensor())
+	print(robot.get_bumper_sensor())
