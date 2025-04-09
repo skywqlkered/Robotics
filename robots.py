@@ -103,7 +103,7 @@ class Robot_OS(Robot):
 		Returns:
 			Float: battery value
 		"""
-        return float(self.get_string_signal("battery").decode("utf-8"))
+        return float(self.get_string_signal("battery"))
 
     def get_bumper_sensor(self):
         """
