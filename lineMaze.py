@@ -24,9 +24,9 @@ def is_red_detected(color_sensor):
 
 def is_blue_detected(color_sensor):
     """
-       Calculates the relative intensity of the blue channel compared to
-       other channels
-       """
+    Calculates the relative intensity of the blue channel compared to
+    other channels
+    """
     blue_ratio_threshold = 1.5
     red, green, blue = color_sensor.rgb()
     blue_intensity = blue / (red + green)
@@ -44,6 +44,9 @@ def follow_line():
 
     left_motor.run(speed=5) # Runs the left motor at speed=5
     right_motor.run(speed=5) # Runs the right motor at speed=5
+
+def on_line() -> None:
+    pass
 
 # Starts coppeliasim simulation if not done already
 sim.startSimulation()
