@@ -62,9 +62,8 @@ ki: float = 0.001
 kd: float = 0.0005
 """
 kp: float = 0.14 
-ki: float = 0.0
-kd: float = 0.00
-
+ki: float = 0.00001
+kd: float = 0.001 # 0.0001 works
 pid = PID(Kp=kp, Ki=ki, Kd=kd, setpoint=setpoint)
 sim.startSimulation()
 
