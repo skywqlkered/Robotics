@@ -2,7 +2,6 @@ from robots import *
 import time
 from coppeliasim_zmqremoteapi_client import *
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 client = RemoteAPIClient()
 sim = client.require("sim")
@@ -31,8 +30,13 @@ while True:
 	# print(robot.get_battery())
 	left_motor.run(5)
 	right_motor.run(4)
-	# robot.compress()
+	robot.compress()
 	# print(small_image_sensor.rgb())
 	# print(top_image_sensor.rgb())
-	print(robot.get_sonar_sensor())
-	print(robot.get_bumper_sensor())
+	# print(robot.get_sonar_sensor())
+	# print(robot.get_bumper_sensor())
+	small_image_sensor._update_image()
+	image = small_image_sensor.get_image()
+	show_image(image)
+	print(image)
+	# show_image(image)
