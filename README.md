@@ -4,9 +4,7 @@ this is the robot
 # Wall-E subsumption
 
 Hierarchy:
-1. search (rotate until object found)
-2. battery (if below threshold, go to yellow)
-3. interact with object (if green: go to blue, if brown: compact, if black: move to red)
-    local green = {76, 255, 0}
-    local brown = {178, 76, 0}
-    local black = {0, 0, 0}
+1. battery (if below threshold, go to yellow (drive towards yellow if visible, else rotate in place))
+2. trash compress (if in front of trash, compress)
+3. interact with object (if green: go to blue, if black: move to red)
+4. search (rotate in place)
