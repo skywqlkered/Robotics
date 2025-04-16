@@ -2,6 +2,7 @@ from robots import *
 import time
 from coppeliasim_zmqremoteapi_client import *
 from ImageRecognizer import ImageRecognizer
+from wall_e_functions import *
 
 client = RemoteAPIClient()
 sim = client.require("sim")
@@ -21,14 +22,44 @@ img_recognizer = ImageRecognizer(top_image_sensor, small_image_sensor)
 sim.startSimulation()
 
 time.sleep(0.5)
+search = False
 
 # MAIN CONTROL LOOP
 while True:
-	# print(robot.get_battery())
-	left_motor.run(0.2)
-	right_motor.run(0.1)
-	detections = img_recognizer.find_objects()
-	ImageRecognizer.create_detection_image(detections)
-	if img_recognizer.check_carrying() == 'trash':
-		robot.compress()
-		print("Compressed trash")
+    detections = img_recognizer.find_objects()
+    target = get_largest_block(detections)
+    carrying = img_recognizer.check_carrying()
+    ImageRecognizer.create_detection_image(detections)
+
+    if robot.get_battery() < 0.15:
+        detection = check_detections("charge_station", detections)
+        if detection:
+            # Move to charge station
+            move_to_target(detection, left_motor, right_motor)
+            continue
+		
+    elif carrying == "trash":
+        robot.compress()
+	
+    elif carrying == "plant":
+        detection = check_detections("plant_box", detections)
+        if detection:
+            # Move to plant box
+            move_to_target(detection, left_motor, right_motor)
+            continue
+
+    elif carrying == "compressed_trash":
+        detection = check_detections("trash_box", detections)
+        if detection:
+            # Move to trash box
+            move_to_target(detection, left_motor, right_motor)
+            continue
+
+    elif target:
+        print("target")
+        move_to_target(target, left_motor, right_motor)
+        continue
+
+    # searching
+    left_motor.run(0.2)
+    right_motor.run(-0.2)
