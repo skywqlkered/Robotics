@@ -103,15 +103,23 @@ class ImageRecognizer:
         objects_found = sorted(objects_found, key=lambda x: x["size"], reverse=True)
 
         # Exclude the largest black area (sky) if specified
-        if exclude_sky and len(objects_found) > 0:
+        if exclude_sky:
+            objects = []
             for obj in objects_found:
-                if obj["name"] == "compressed_trash":
-                    objects_found.remove(obj)
-                    break
-        
-        return objects_found
+                # Don't keep sky
+                if obj["name"] == "compressed_trash" and not (obj["position"][1] > 18 and obj["size"] < 500):# and abs(obj["size"][0] - obj["size"][1]) < 5):
+                    continue
+                # Don't keep roof
+                elif obj["name"] == "trash" and obj["position"][1] < 5:
+                    continue
+                # Keep the rest
+                else:
+                    objects.append(obj)
+            return objects
+        else:
+            return objects_found
     
-    def check_carrying(self, threshold = 0.75, update=True):
+    def check_carrying(self, threshold = 0.8, update=True):
         """
         Checks if the robot is carrying an object.
         Checks if the object is more than a certain threshold of the small image size.
@@ -125,8 +133,8 @@ class ImageRecognizer:
             str: object name of the object detected. None if no object is detected.
         """
         try:
-            objects = self.find_objects(update=update, use_top_img=False, detection_threshold=0)
-            if objects[0]["size"] > threshold * 64 * 64:
+            objects = self.find_objects(update=update, use_top_img=False, detection_threshold=0, exclude_sky=False)
+            if objects[0]["size"] >= threshold * 64 * 64:
                 return objects[0]["name"]
         except:
             return None

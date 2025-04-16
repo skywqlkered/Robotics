@@ -30,12 +30,13 @@ while True:
     target = get_largest_block(detections)
     carrying = img_recognizer.check_carrying()
     ImageRecognizer.create_detection_image(detections)
-
+    # print(detections)
+    # robot.compress()
     if robot.get_battery() < 0.15:
         detection = check_detections("charge_station", detections)
         if detection:
             # Move to charge station
-            move_to_target(detection, left_motor, right_motor)
+            move_to_target(detection, left_motor, right_motor, detections[0])
             continue
 		
     elif carrying == "trash":
@@ -45,21 +46,25 @@ while True:
         detection = check_detections("plant_box", detections)
         if detection:
             # Move to plant box
-            move_to_target(detection, left_motor, right_motor)
+            move_to_target(detection, left_motor, right_motor, detections[0])
             continue
 
     elif carrying == "compressed_trash":
         detection = check_detections("trash_box", detections)
         if detection:
             # Move to trash box
-            move_to_target(detection, left_motor, right_motor)
+            move_to_target(detection, left_motor, right_motor, detections[0])
             continue
 
     elif target:
-        print("target")
-        move_to_target(target, left_motor, right_motor)
+        move_to_target(target, left_motor, right_motor, detections[0])
         continue
 
     # searching
-    left_motor.run(0.2)
-    right_motor.run(-0.2)
+    if img_recognizer.check_carrying(threshold=0.6) in ["trash_box", "plant_box"]:
+        # Drive backwards if near deposit box
+        left_motor.run(-2.0)
+        right_motor.run(-2.2)
+    else:
+        left_motor.run(0.6)
+        right_motor.run(-0.6)
