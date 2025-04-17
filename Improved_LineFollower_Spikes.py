@@ -58,6 +58,7 @@ class PID:
         self.prev_error = error
         self.prev_noise_filter = self.noise_filter
 
+        self.time_start = time_end
         return output
 
 async def main():
@@ -80,6 +81,5 @@ async def main():
 
         motor.run(port.A, int(base_speed + correcting_speed)) # Left motor
         motor.run(port.B, int(base_speed - correcting_speed)) # Right motor
-        pid_controller.time_start = time.time()
 
 runloop.run(main())
