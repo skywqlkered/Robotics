@@ -63,8 +63,8 @@ while True:
     # searching
     if img_recognizer.check_carrying(threshold=0.6) in ["trash_box", "plant_box"]:
         # Drive backwards if near deposit box
-        left_motor.run(-2.0)
-        right_motor.run(-2.2)
+        left_motor.run(-3.0)
+        right_motor.run(-3.4)
     else:
-        left_motor.run(0.6)
-        right_motor.run(-0.6)
+        left_motor.run(1.5)
+        right_motor.run(-1.5)

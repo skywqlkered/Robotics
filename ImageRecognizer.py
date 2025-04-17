@@ -119,7 +119,7 @@ class ImageRecognizer:
         else:
             return objects_found
     
-    def check_carrying(self, threshold = 0.8, update=True):
+    def check_carrying(self, threshold = 0.9, black_threshold = 0.65, update=True):
         """
         Checks if the robot is carrying an object.
         Checks if the object is more than a certain threshold of the small image size.
@@ -135,6 +135,8 @@ class ImageRecognizer:
         try:
             objects = self.find_objects(update=update, use_top_img=False, detection_threshold=0, exclude_sky=False)
             if objects[0]["size"] >= threshold * 64 * 64:
+                return objects[0]["name"]
+            elif (objects[0]["size"] >= black_threshold * 64 * 64 or objects[0]["position"][0] > 38 or objects[0]["position"][0] < 26) and objects[0]["name"] == "compressed_trash" and objects[0]["position"][1] > 26 and objects[0]["position"][1] < 38:
                 return objects[0]["name"]
         except:
             return None
