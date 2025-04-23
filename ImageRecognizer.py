@@ -133,11 +133,15 @@ class ImageRecognizer:
             str: object name of the object detected. None if no object is detected.
         """
         try:
+            detections = self.find_objects(update=False, exclude_sky=True)
             objects = self.find_objects(update=update, use_top_img=False, detection_threshold=0, exclude_sky=False)
             if objects[0]["size"] >= threshold * 64 * 64:
                 return objects[0]["name"]
             elif (objects[0]["size"] >= black_threshold * 64 * 64 or objects[0]["position"][0] > 38 or objects[0]["position"][0] < 26) and objects[0]["name"] == "compressed_trash" and objects[0]["position"][1] > 26 and objects[0]["position"][1] < 38:
                 return objects[0]["name"]
+            for detection in detections:
+                if detection["name"] == "compressed_trash" and detection["position"][1] > 52:
+                    return "compressed_trash"
         except:
             return None
 
