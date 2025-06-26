@@ -27,14 +27,14 @@ class pid():
         if len(self.previous_errors) > self.deque_len:
             self.previous_errors.pop(0) 
 
-        dt = (self.previous_errors[-1][0] - self.previous_errors[-2][0])
+        dt = (self.previous_errors[-1][0] - self.previous_errors[-2][0]) / 1000  # seconds
         derivative = (self.previous_errors[-1][1] - self.previous_errors[-2][1]) / dt
         
         integral = 0
-        first_time = self.previous_errors[0][0]
-        for datapoint_index in range(1,len(self.previous_errors)):
-            integral += (self.previous_errors[datapoint_index][0]-first_time) * self.previous_errors[datapoint_index][1]
-            first_time = self.previous_errors[datapoint_index][0]
+        for i in range(1, len(self.previous_errors)):
+            dt = (self.previous_errors[i][0] - self.previous_errors[i-1][0]) / 1000
+            integral += self.previous_errors[i][1] * dt
+
 
         P_term = error * self.kp
         I_term = integral * self.ki
@@ -59,14 +59,23 @@ class pid():
 #     """
 #     change_motor_PID()
 
-def main():
+
+def stop():
+    left_motor.run(speed=0)
+    right_motor.run(speed=0)
+    sim.stopSimulation()
+    exit(0)
+
+async def main():
+    
     global global_reflection
-    kp: float = 1.5
+    kp: float = 0.4
     ki: float = 0
     kd: float = 0
-    setpoint = 48
-    
+    setpoint = 67
     sim.startSimulation()
+
+    start_time = time.time()
 
     pid_controller = pid(kp, ki, kd, setpoint, 100)
     # motor_pair.pair(motor_pair.PAIR_1, port.E, port.B)
@@ -78,15 +87,34 @@ def main():
         print(reflection)
         print(correcting_speed, "\n")
 
+        basespeed: float = 15.0
+        await asyncio.sleep(0.02)
+        
+        max_correction = 20.0 # ignoring out of bounds output
+        correcting_speed = max(-max_correction, min(correcting_speed, max_correction))
+        if abs(correcting_speed) < 0.5: # removing jitter
+            correcting_speed = 0
 
-        basespeed = 15
+        basespeed = 10.0
+        
+        turn_boost = 5.0  # extra speed boost for sharper turns
+
+        if correcting_speed < 0:
+            left_speed = basespeed - correcting_speed + turn_boost  # left motor speed higher
+            right_speed = basespeed + correcting_speed
+        else:
+            left_speed = basespeed - correcting_speed
+            right_speed = basespeed + correcting_speed
+
+
         left_motor.run(speed=basespeed-correcting_speed)
         right_motor.run(speed=basespeed+correcting_speed)
 
-        # if reflection == 0.0:
-        #     exit(404)
+        if time.time() - start_time > 5: 
+            if reflection == 0.0:# Stops the simulation if relection is 0 after 5 seconds has past
+                stop()
 
 
 # MAIN CONTROL LOOP
 
-main()
+asyncio.run(main())
