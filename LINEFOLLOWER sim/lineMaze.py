@@ -83,32 +83,25 @@ async def main():
     while True:
         color_sensor._update_image() # Updates the internal image
         reflection = color_sensor.reflection() # Gets the reflection from the image
+
+
         correcting_speed = pid_controller.compute_output(reflection)
         print(reflection)
         print(correcting_speed, "\n")
 
-        basespeed: float = 15.0
         await asyncio.sleep(0.02)
         
-        max_correction = 20.0 # ignoring out of bounds output
-        correcting_speed = max(-max_correction, min(correcting_speed, max_correction))
+        # max_correction = 20.0 # ignoring out of bounds output
+        # correcting_speed = max(-max_correction, min(correcting_speed, max_correction))
         if abs(correcting_speed) < 0.5: # removing jitter
             correcting_speed = 0
 
-        basespeed = 10.0
-        
-        turn_boost = 5.0  # extra speed boost for sharper turns
+        basespeed = 15.0
 
-        if correcting_speed < 0:
-            left_speed = basespeed - correcting_speed + turn_boost  # left motor speed higher
-            right_speed = basespeed + correcting_speed
-        else:
-            left_speed = basespeed - correcting_speed
-            right_speed = basespeed + correcting_speed
+       
+        left_motor.run(speed=basespeed - correcting_speed)
+        right_motor.run(speed=basespeed + correcting_speed)
 
-
-        left_motor.run(speed=basespeed-correcting_speed)
-        right_motor.run(speed=basespeed+correcting_speed)
 
         if time.time() - start_time > 5: 
             if reflection == 0.0:# Stops the simulation if relection is 0 after 5 seconds has past
