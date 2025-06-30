@@ -1,4 +1,4 @@
-from robots import *
+from robots import * #  # noqa: F403
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
 import time
 import asyncio
@@ -7,9 +7,9 @@ client = RemoteAPIClient()
 sim = client.require("sim")
 
 # HANDLES FOR ACTUATORS AND SENSORS
-left_motor = Motor(sim, DeviceNames.MOTOR_LEFT_LINE, Direction.CLOCKWISE)
-right_motor = Motor(sim, DeviceNames.MOTOR_RIGHT_LINE, Direction.CLOCKWISE)
-color_sensor = ImageSensor(sim, DeviceNames.IMAGE_SENSOR_LINE)
+left_motor = Motor(sim, DeviceNames.MOTOR_LEFT_LINE, Direction.CLOCKWISE)  # noqa: F405
+right_motor = Motor(sim, DeviceNames.MOTOR_RIGHT_LINE, Direction.CLOCKWISE) # noqa: F405
+color_sensor = ImageSensor(sim, DeviceNames.IMAGE_SENSOR_LINE) # noqa: F405
 
 
 class pid():
