@@ -1,4 +1,9 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from robots import *  # noqa: F403
+
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
 import time
 import asyncio
@@ -101,7 +106,7 @@ async def main():
     start_time = time.time()
 
     pid_controller = pid(kp, ki, kd, setpoint, 100)
-    
+
     while True:
         color_sensor._update_image()  # Updates the internal image
         reflection = color_sensor.reflection()  # Gets the reflection from the image

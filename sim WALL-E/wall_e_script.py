@@ -1,4 +1,9 @@
-from robots import *
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from robots import *  # noqa: F403
+
 import time
 from coppeliasim_zmqremoteapi_client import *
 from ImageRecognizer import ImageRecognizer
