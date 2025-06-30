@@ -1,4 +1,7 @@
 import numpy as np
+
+# This program reads reflection data from a file and calculates the maximum, minimum, and average of the values.
+
 reflect_list = []
 with open ("reflectiondata.txt", "r") as f:
     for x in f.read().split(","):

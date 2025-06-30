@@ -107,7 +107,7 @@ class ImageRecognizer:
             objects = []
             for obj in objects_found:
                 # Don't keep sky
-                if obj["name"] == "compressed_trash" and not (obj["position"][1] > 18 and obj["size"] < 500):# and abs(obj["size"][0] - obj["size"][1]) < 5):
+                if obj["name"] == "compressed_trash" and not (obj["position"][1] > 18 and obj["size"] < 500):
                     continue
                 # Don't keep roof
                 elif obj["name"] == "trash" and obj["position"][1] < 5:
@@ -133,12 +133,19 @@ class ImageRecognizer:
             str: object name of the object detected. None if no object is detected.
         """
         try:
+            # Get the detections from the top image and objects from the small image
             detections = self.find_objects(update=False, exclude_sky=True)
             objects = self.find_objects(update=update, use_top_img=False, detection_threshold=0, exclude_sky=False)
+            
+            # If the biggest object's surface area is larger than the threshold, return the name of the object
             if objects[0]["size"] >= threshold * 64 * 64:
                 return objects[0]["name"]
+            
+            # If the biggest object is compressed trash and its surface area is larger than the black threshold, return its name
             elif (objects[0]["size"] >= black_threshold * 64 * 64 or objects[0]["position"][0] > 38 or objects[0]["position"][0] < 26) and objects[0]["name"] == "compressed_trash" and objects[0]["position"][1] > 26 and objects[0]["position"][1] < 38:
                 return objects[0]["name"]
+            
+            # If any object is compressed trash and its position is below a certain threshold in the top image, return its name
             for detection in detections:
                 if detection["name"] == "compressed_trash" and detection["position"][1] > 52:
                     return "compressed_trash"
@@ -154,8 +161,11 @@ class ImageRecognizer:
             detections (list[dict]): List of detected objects with their properties.
             img_size (int): Size of the image in pixels.
         """
+
+        # Create a blank image with the specified background color
         img = np.full((64*img_size, 64*img_size, 3), cls._background_bgr, dtype=np.uint8)
 
+        # Draw each detection on the image
         for det in detections:
             name = det['name']
             size = det['size']*img_size
@@ -166,5 +176,7 @@ class ImageRecognizer:
 
             cv2.circle(img, center, radius, fill_bgr, -1)
             cv2.circle(img, center, radius, cls._outline_bgr, 1)
+
+        # Show the image with detections, without blocking the thread
         cv2.imshow("Detection Image", img)
         cv2.waitKey(1)
