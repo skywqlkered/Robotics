@@ -101,8 +101,7 @@ async def main():
     start_time = time.time()
 
     pid_controller = pid(kp, ki, kd, setpoint, 100)
-    # motor_pair.pair(motor_pair.PAIR_1, port.E, port.B)
-
+    
     while True:
         color_sensor._update_image()  # Updates the internal image
         reflection = color_sensor.reflection()  # Gets the reflection from the image
