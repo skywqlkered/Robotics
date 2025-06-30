@@ -1,4 +1,4 @@
-from robots import * #  # noqa: F403
+from robots import *  # noqa: F403
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
 import time
 import asyncio
@@ -8,8 +8,9 @@ sim = client.require("sim")
 
 # HANDLES FOR ACTUATORS AND SENSORS
 left_motor = Motor(sim, DeviceNames.MOTOR_LEFT_LINE, Direction.CLOCKWISE)  # noqa: F405
-right_motor = Motor(sim, DeviceNames.MOTOR_RIGHT_LINE, Direction.CLOCKWISE) # noqa: F405
-color_sensor = ImageSensor(sim, DeviceNames.IMAGE_SENSOR_LINE) # noqa: F405
+right_motor = Motor(sim, DeviceNames.MOTOR_RIGHT_LINE, Direction.CLOCKWISE)  # noqa: F405
+color_sensor = ImageSensor(sim, DeviceNames.IMAGE_SENSOR_LINE)  # noqa: F405
+basespeed = 0
 
 
 class pid():
@@ -37,7 +38,13 @@ class pid():
         Returns:
             float: The PID output
         """
-        error = current_value - self.setpoint
+        global basespeed
+        error = self.setpoint - current_value
+        # Slows the robot down in corners where error is too high
+        basespeed = 15.0 - 0.5 * abs(error)
+        # Ensures the basespeed is not too low because i get bored of waiting
+        basespeed = max(basespeed, 5.0)
+
         # Append the current time and error to the deque
         self.previous_errors.append((time.time_ns()/1000000, error))
         if len(self.previous_errors) > self.deque_len:
@@ -60,11 +67,12 @@ class pid():
 
         return P_term + I_term + D_term
 
-def stop(): 
+
+def stop():
     """
     Stops the robot and the simulation
     """
-    
+
     left_motor.run(speed=0)
     right_motor.run(speed=0)
     sim.stopSimulation()
@@ -72,7 +80,6 @@ def stop():
 
 
 async def main():
-
     """
     Main function of the script. It sets up the PID controller and sets the
     robot's motors to move according to the PID controller's output. The
@@ -86,10 +93,11 @@ async def main():
     """
     kp: float = 0.4
     ki: float = 0
-    kd: float = 0
-    setpoint = 67
-    sim.startSimulation()
+    kd: float = 0.06
+    setpoint: float = 67.0
+    # basespeed: float = 15.0
 
+    sim.startSimulation()
     start_time = time.time()
 
     pid_controller = pid(kp, ki, kd, setpoint, 100)
@@ -99,20 +107,20 @@ async def main():
         color_sensor._update_image()  # Updates the internal image
         reflection = color_sensor.reflection()  # Gets the reflection from the image
 
-        correcting_speed = pid_controller.compute_output(reflection) 
+        correcting_speed = pid_controller.compute_output(reflection)
 
         print(reflection)
         print(correcting_speed, "\n")
 
-        await asyncio.sleep(0.02) # Prevents NAN errors
+        await asyncio.sleep(0.02)  # Prevents NAN errors
 
         if abs(correcting_speed) < 0.5:  # removes jitter by ignoring small corrections
             correcting_speed = 0
 
-        basespeed = 15.0
-
-        left_motor.run(speed=basespeed - correcting_speed) # allows the robot to turn left or right based on the reflection
-        right_motor.run(speed=basespeed + correcting_speed) # If the reflection is low, the robot turns right, if high, it turns left
+        # allows the robot to turn left or right based on the reflection
+        left_motor.run(speed=basespeed + correcting_speed)
+        # If the reflection is low, the robot turns right, if high, it turns left
+        right_motor.run(speed=basespeed - correcting_speed)
 
         if time.time() - start_time > 5:
             if reflection == 0.0:  # Stops the simulation if relection is 0 after 5 seconds has past
